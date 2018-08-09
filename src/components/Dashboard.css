@@ -1,0 +1,13 @@
+.custom-button-submit{
+	background-color: #039be5 !important;
+}
+
+.custom-text-field{
+	box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 1px 1px;
+    border-radius: 4px;
+    padding: 10px 10px;
+}
+
+.custom-label{
+	margin: -3px 0px;
+}
