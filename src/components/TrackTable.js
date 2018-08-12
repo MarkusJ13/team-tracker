@@ -74,8 +74,8 @@ class TrackTable extends Component {
           <TableRow>
             <CustomTableCell>Team Name</CustomTableCell>
             <CustomTableCell>Current Position</CustomTableCell>
-            <CustomTableCell>Last Updated</CustomTableCell>
             <CustomTableCell>Tools</CustomTableCell>
+            <CustomTableCell>Last Updated</CustomTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -102,13 +102,12 @@ class TrackTable extends Component {
                   <Tooltip disableFocusListener title="Edit">
                     <Button
                     	classes={{root: 'custom-button-round'}}
-                    	onClick={this.props.updateTeam.bind(this, n.id)}
+                    	onClick={this.props.updateTeamPosition.bind(this, n.id)}
                     >
                     	<Edit size={18} className="edit-icon"/>
                     </Button>
                   </Tooltip>
                 </CustomTableCell>
-                <CustomTableCell><div>{n.updated}</div></CustomTableCell>
                 <CustomTableCell>
                   <Button
                   	variant="contained"
@@ -124,6 +123,7 @@ class TrackTable extends Component {
                     </Button>
                   </Tooltip>
                 </CustomTableCell>
+                <CustomTableCell><div>{n.updated}</div></CustomTableCell>
               </TableRow>
             );
           })}

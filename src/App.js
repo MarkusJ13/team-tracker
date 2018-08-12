@@ -21,10 +21,12 @@ const PropsRoute = ({ component, ...rest }) => {
 class App extends Component {
 	constructor(props){
 		super(props)
+		let checkpoints = JSON.parse(localStorage.getItem('checkpoints'))
 		this.state = {
 			screen: 'table',
 			teams: [],
-			postions: {}
+			postions: {},
+			checkpoints: checkpoints?checkpoints:[]
 		}
 	}
 
@@ -50,13 +52,28 @@ class App extends Component {
 		for(let i=0; i<teams.length; i++){
 			if(teams[i].id === update.id){
 				teams[i].name = update.name
-				teams[i].position = update.position
 				teams[i].updated = update.updated
-				teams[i].showRoute = update.showRoute
 			}
 		}
-		positions[update.id].push(update.position)
+		//positions[update.id].push(update.position)
 		this.setState({teams, positions})
+		localStorage.setItem('teams', JSON.stringify(teams))
+		//localStorage.setItem('positions', JSON.stringify(positions))
+	}
+
+	getTeamId = id => {
+		let {teams} = this.state
+		for(let i=0; i<teams.length; i++){
+			if(teams[i].id === id) return i
+		}
+	}
+
+	saveRouteUpdate = (id, newPositions) => {
+		let {teams, positions} = this.state
+		teams[this.getTeamId(id)].position = newPositions[newPositions.length - 1]
+		positions[id] = newPositions
+		this.setState({teams, positions})
+		console.log("final pos", positions)
 		localStorage.setItem('teams', JSON.stringify(teams))
 		localStorage.setItem('positions', JSON.stringify(positions))
 	}
@@ -88,17 +105,25 @@ class App extends Component {
 		localStorage.setItem('teams', JSON.stringify(teams))
 	}
 
+	updateCheckpoints = checkpoints => {
+		window.alert('Check points updated successfully!')
+		this.setState({checkpoints})
+	}
+
 	render() {
-		let {screen, teams, positions} = this.state
+		let {screen, teams, positions, checkpoints} = this.state
 		return (
 			<div>
 				{screen==='table'?<Dashboard
 					addTeam={this.addTeam}
 					teams={teams}
+					positions={positions}
 					saveUpdate={this.saveUpdate}
 					deleteTeam={this.deleteTeam}
 					changeScreen={this.changeScreen}
-
+					checkpoints={checkpoints}
+					updateCheckpoints={this.updateCheckpoints}
+					saveRouteUpdate={this.saveRouteUpdate}
 				/>:
 				<LiveRoute
 					teams={teams}

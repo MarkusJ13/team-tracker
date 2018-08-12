@@ -69,7 +69,7 @@ class LiveRoute extends Component {
 		    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 		    subdomains: 'abc',
 		    minZoom: 12,
-		    maxZoom: 12,
+		    maxZoom: 14,
 		    crossOrigin: true
 		});
 		let offlineControl = L.control.offline(offlineLayer, tilesDb, {
@@ -86,7 +86,7 @@ class LiveRoute extends Component {
 		        }
 		    },
 		    minZoom: 12,
-		    maxZoom: 19
+		    maxZoom: 14
 		});
 		this.offlineLayer = offlineLayer
 		this.offlineControl = offlineControl
