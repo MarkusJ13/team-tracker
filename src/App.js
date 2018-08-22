@@ -41,24 +41,23 @@ class App extends Component {
 	addTeam = team => {
 		let {teams, positions} = this.state
 		teams.push(team)
-		positions[team.id] = [team.position]
+		positions[team.id] = []
 		this.setState({teams, positions})
 		localStorage.setItem('teams', JSON.stringify(teams))
 		localStorage.setItem('positions', JSON.stringify(positions))
 	}
 
 	saveUpdate = update => {
-		let {teams, positions} = this.state
+		let {teams} = this.state
 		for(let i=0; i<teams.length; i++){
 			if(teams[i].id === update.id){
 				teams[i].name = update.name
+				teams[i].position = update.position
 				teams[i].updated = update.updated
 			}
 		}
-		//positions[update.id].push(update.position)
-		this.setState({teams, positions})
+		this.setState({teams})
 		localStorage.setItem('teams', JSON.stringify(teams))
-		//localStorage.setItem('positions', JSON.stringify(positions))
 	}
 
 	getTeamId = id => {
@@ -110,6 +109,11 @@ class App extends Component {
 		this.setState({checkpoints})
 	}
 
+	addPosition = positions => {//change its name. update position
+		this.setState({positions})
+		localStorage.setItem('positions', JSON.stringify(positions))
+	}
+
 	render() {
 		let {screen, teams, positions, checkpoints} = this.state
 		return (
@@ -130,6 +134,8 @@ class App extends Component {
 					positions={positions}
 					changeScreen={this.changeScreen}
 					updateShowRoute={this.updateShowRoute}
+					addPosition={this.addPosition}
+					saveUpdate={this.saveUpdate}
 				/>}
 			</div>
 		);

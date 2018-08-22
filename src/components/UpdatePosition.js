@@ -11,34 +11,21 @@ class UpdatePosition extends Component {
 	constructor(props){
 		super(props)
 		this.state = {
-			positions: [],
+			position: this.props.teams[this.getTeam(this.props.id)].position,
 			changed: false,
 		}
 	}
 
-	componentDidMount(){
-		console.log("hey 2", this.props.positions)
-		this.setState({
-			positions: this.props.positions.slice(),
-			changed: false
-		})
-	}
-
-	componentWillUnmount(){
-		this.setState({
-			positions: [],
-			changed: false
-		})
-		console.log("hey")
-	}
-
-	handlePosition = (position, index) => {
-		let {positions} = this.state
-		if(positions[index] !== position){
-			this.setState({changed: true})
+	getTeam = id => {
+		let {teams} = this.props
+		for(let i=0; i<teams.length; i++){
+			if(teams[i].id === id) return i;
 		}
-		positions[index] = position
-		this.setState({positions})
+		return null
+	}
+
+	handlePosition = position => {
+		this.setState({changed: true, position: position.target.value})
 	}
 
 	deletePosition = i => {
@@ -66,43 +53,17 @@ class UpdatePosition extends Component {
 	}
 
 	saveUpdate = () => {
-		let {positions} = this.state
-		let {id} = this.props
-		this.props.saveUpdate(id, positions)
+		let {position} = this.state
+		let {id, name} = this.props
+		let updated = (new Date).toString()
+		this.props.saveUpdate({id: id, name: name, position: position, updated: updated})
 		this.props.closeModal()
 	}
 
 	render() {
-		let {name, checkpoints} = this.props
-		let {positions, changed} = this.state
-		console.log('positons', positions)
-		let editablePositions = positions.map((position, index) => {
-			return <div style={{margin: 20}} key={"p" + position + '-' + index}>
-				<FormControl  classes={{root: 'custom-form'}}>
-					<InputLabel>Position</InputLabel>
-					<Select
-						value={this.getCheckpointName(position)}
-						onChange={position => {this.handlePosition(position.target.value, index)}}
-						inputProps={{
-							name: 'Position'
-						}}
-					>
-					{checkpoints.map((checkpoint) => {
-						return <MenuItem key={checkpoint.id} value={checkpoint.id}>{checkpoint.name}</MenuItem>
-					})}
-					</Select>
-				</FormControl>
-				<Button
-					variant="contained"
-					color="secondary"
-					size="small"
-					onClick={() => {this.deletePosition(index)}}
-				>
-					Delete
-				</Button>
-			</div>
-		})
-
+		let {changed, position} = this.state
+		console.log("check value", position)
+		let {name, positions} = this.props
 		return (
 			<div>
 				<div style={{marginRight: 30}} className="edit-header">Update team route</div>
@@ -115,26 +76,22 @@ class UpdatePosition extends Component {
 					InputProps={{className: "custom-text-field", disableUnderline: true}}
 					disabled={true}
 				/>
-				<form autoComplete="off" style={{margin: 20}}>
-					{editablePositions}
-					<div style={{margin: 20}}>
-						<FormControl classes={{root: 'custom-form'}}>
-							<InputLabel>New Position</InputLabel>
-							<Select
-								value={-1}
-								onChange={this.handleNewPosition}
-								inputProps={{
-									name: 'New Position'
-								}}
-							>
-							<MenuItem value={-1}><em>None</em></MenuItem>
-							{checkpoints.map((checkpoint) => {
-								return <MenuItem key={checkpoint.id} value={checkpoint.id}>{checkpoint.name}</MenuItem>
-							})}
-							</Select>
-						</FormControl>
-					</div>
-				</form>
+				{positions.length?<form autoComplete="off" style={{margin: 20}}>
+					<FormControl  classes={{root: 'custom-form'}}>
+						<InputLabel>Position</InputLabel>
+						<Select
+							value={position}
+							onChange={this.handlePosition}
+							inputProps={{
+								name: 'Position'
+							}}
+						>
+						{positions.map((position, index) => {
+							return <MenuItem key={"position-" + index.toString() + "-" + position.name} value={index}>{position.name}</MenuItem>
+						})}
+						</Select>
+					</FormControl>
+				</form>:<div>Add new position (go to routes)</div>}
 				<Button
 					variant="contained"
 					color="primary"

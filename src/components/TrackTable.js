@@ -43,8 +43,6 @@ const styles = theme => ({
   },
 });
 
-const Positions = ['Position 1', 'Position 2', 'Position 3', 'Position 4']
-
 class TrackTable extends Component {
 	constructor(props){
 		super(props)
@@ -66,7 +64,7 @@ class TrackTable extends Component {
 	
 
   render() {
-  const { classes, teams } = this.props
+  const { classes, teams, positions } = this.props
   return (
     <Paper className={classes.root}>
       <Table className={classes.table}>
@@ -97,7 +95,7 @@ class TrackTable extends Component {
                 </CustomTableCell>
                 <CustomTableCell>
                   <span style={{marginRight: 10, paddingRight: 10}}>
-                    {Positions[n.position]}
+                    {positions[n.id]&&(n.position!==undefined)?(positions[n.id][n.position]?positions[n.id][n.position].name:''):''}
                   </span>
                   <Tooltip disableFocusListener title="Edit">
                     <Button

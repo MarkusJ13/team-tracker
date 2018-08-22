@@ -36,8 +36,7 @@ class Dashboard extends Component {
 			open: false,
 			openUpdate: false,
 			openUpdatePosition: false,
-			name: '',
-			position: -1,
+			name: ''
 		}
 	}
 
@@ -82,10 +81,10 @@ class Dashboard extends Component {
   	}
 
   	addTeam = () => {
-  		let {name, position} = this.state
+  		let {name} = this.state
   		let updated = (new Date).toString()
   		let id = Math.random().toString(36).substring(7)
-  		this.props.addTeam({id: id, name: name, position: position, updated: updated, showRoute: 'yes'})
+  		this.props.addTeam({id: id, name: name, updated: updated, showRoute: 'yes'})
   		this.setState({open: false})
   	}
 
@@ -129,11 +128,12 @@ class Dashboard extends Component {
 
 	render() {
 		let {id, name, position, updated} = this.state
-		let {positions, checkpoints} = this.props
+		let {positions, checkpoints, teams} = this.props
 		return (
 			<div>
 				<TrackTable
 					showRoute={this.showRoute}
+					positions={positions}
 					teams={this.props.teams}
 					updateTeam={this.updateTeam}
 					updateTeamPosition={this.updateTeamPosition}
@@ -177,32 +177,14 @@ class Dashboard extends Component {
 						InputProps={{className: "custom-text-field", disableUnderline: true}}
 						onChange={this.handleName}
 					/>
-					<form autoComplete="off" style={{margin: 20}}>
-						<FormControl classes={{root: 'custom-form'}}>
-							<InputLabel htmlFor="age-simple">Position</InputLabel>
-							<Select
-								value={this.state.position}
-								onChange={this.handlePosition}
-								inputProps={{
-									name: 'Position',
-									id: 'position-simple',
-								}}
-							>
-							<MenuItem value={-1}><em>None</em></MenuItem>
-							{checkpoints.map((checkpoint) => {
-								return <MenuItem key={checkpoint.id} value={checkpoint.id}>{checkpoint.name}</MenuItem>
-							})}
-							</Select>
-						</FormControl>
-					</form>
 					<Button
 						variant="contained"
 						color="primary"
-						classes={(name && this.state.position !== -1)?{
+						classes={name?{
 							root: 'custom-button-submit'
 						}:{}}
 						size="large"
-						disabled={!(name && this.state.position !== -1)}
+						disabled={!name}
 						onClick={this.addTeam}
 					>
 						Submit
@@ -244,9 +226,10 @@ class Dashboard extends Component {
 					<UpdatePosition
 						name={name}
 						id={id}
+						teams={teams}
 						positions={positions[id]}
 						checkpoints={checkpoints}
-						saveUpdate={this.props.saveRouteUpdate}
+						saveUpdate={this.props.saveUpdate}
 						closeModal={() => {this.setState({openUpdatePosition: false})}}
 					/>
 				</Modal>

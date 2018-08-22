@@ -2,16 +2,24 @@ import React, { Component } from 'react';
 import { render } from 'react-dom';
 import L from 'leaflet';
 import 'leaflet-offline';
-
+import './LiveRoute.css';
 import localforage from 'localforage';
 import Leftbar from './Leftbar.js';
 
 const LatLngs = [[19.00, 72.85], [19.03, 72.93], [19.05, 72.85], [19.067, 72.82]]
 const Colors = ['blue', 'red', 'green', 'blue', 'green', 'red']
 
+
+
 class LiveRoute extends Component {
 	constructor(props) {
 		super(props)
+		this.state = {
+			changeTeam: '',
+			changePosition: '',
+			addPosition: false
+		}
+
 		let tilesDb = {
 		    getItem: function (key) {
 		        return localforage.getItem(key);
@@ -69,7 +77,7 @@ class LiveRoute extends Component {
 		    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 		    subdomains: 'abc',
 		    minZoom: 12,
-		    maxZoom: 14,
+		    maxZoom: 19,
 		    crossOrigin: true
 		});
 		let offlineControl = L.control.offline(offlineLayer, tilesDb, {
@@ -86,7 +94,7 @@ class LiveRoute extends Component {
 		        }
 		    },
 		    minZoom: 12,
-		    maxZoom: 14
+		    maxZoom: 19
 		});
 		this.offlineLayer = offlineLayer
 		this.offlineControl = offlineControl
@@ -142,31 +150,45 @@ class LiveRoute extends Component {
 		let {teams, positions} = this.props
 		for(let i=0; i<teams.length; i++){
 			if(teams[i].showRoute === 'yes'){
-				let currPos = LatLngs[teams[i].position]
-				L.marker(currPos).addTo(map)
+				let positionIndex = teams[i].position!==undefined?teams[i].position:undefined
+				if(positionIndex !== undefined){
+					console.log("check index", positionIndex)
+					let currPos = positions[teams[i].id][positionIndex]
+					L.marker([currPos.lat, currPos.lng], {
+						icon: new L.DivIcon({
+							className: 'my-div-icon',
+							html: '<img class="my-div-image" src="https://unpkg.com/leaflet@1.0.3/dist/images/marker-icon.png"/>' + '<span class="team-name-map">' + teams[i].name + '</span>'
+						})
+					}).addTo(this.map)
+				}
 				let latlngs = []
-				console.log("teams", teams[i].id, positions[teams[i].id])
 				let teamPositions = positions[teams[i].id]
-				console.log("pos", teamPositions)
 				for(let j=0; j<teamPositions.length; j++){
-					latlngs.push(LatLngs[teamPositions[j]])
+					latlngs.push([teamPositions[j].lat, teamPositions[j].lng])
+					L.marker([teamPositions[j].lat, teamPositions[j].lng], {
+						icon: new L.DivIcon({
+							className: 'team-position-icon',
+							html: '<span class="team-postion-map">' + j.toString() + '</span>'
+						})
+					}).addTo(map)
 				}
 				L.polyline(latlngs, {color: Colors[i]}).addTo(map);	
 			}
 		}
-		// zoom the map to the polyline
-		// this.map.fitBounds(polyline.getBounds());
+
+		let self = this
+		this.map.on('click', function(e){
+			var coord = e.latlng;
+			var lat = coord.lat;
+			var lng = coord.lng;
+			self.changePosition(lat, lng)
+			console.log("You clicked the map at latitude: " + lat + " and longitude: " + lng);
+		});
 	}
 
 	clearMap = () => {
-		// console.log("he", L.markerClusterGroup())//.clearLayers();
-		// this.map.eachLayer(layer => {
-		// 	console.log("cl", layer)
-		// 	this.map.removeLayer(layer);
-		// });
 		for(let i in this.map._layers){
 			if(this.map._layers[i]._path != undefined || this.map._layers[i]._icon != undefined) {
-				console.log("yeas")
 				try {
 					this.map.removeLayer(this.map._layers[i]);
 				}
@@ -182,14 +204,26 @@ class LiveRoute extends Component {
 		let {teams, positions} = this.props
 		for(let i=0; i<teams.length; i++){
 			if(teams[i].showRoute === 'yes'){
-				let currPos = LatLngs[teams[i].position]
-				L.marker(currPos).addTo(this.map)
+				let positionIndex = teams[i].position!==undefined?teams[i].position:undefined
+				if(positionIndex !== undefined){
+					let currPos = positions[teams[i].id][positionIndex]
+						L.marker([currPos.lat, currPos.lng], {
+							icon: new L.DivIcon({
+								className: 'my-div-icon',
+								html: '<img class="my-div-image" src="https://unpkg.com/leaflet@1.0.3/dist/images/marker-icon.png"/>' + '<span class="team-name-map">' + teams[i].name + '</span>'
+							})
+						}).addTo(this.map)
+				}
 				let latlngs = []
-				console.log("teams", teams[i].id, positions[teams[i].id])
 				let teamPositions = positions[teams[i].id]
-				console.log("pos", teamPositions)
 				for(let j=0; j<teamPositions.length; j++){
-					latlngs.push(LatLngs[teamPositions[j]])
+					latlngs.push([teamPositions[j].lat, teamPositions[j].lng])
+					L.marker([teamPositions[j].lat, teamPositions[j].lng], {
+						icon: new L.DivIcon({
+							className: 'team-position-icon',
+							html: '<span class="team-postion-map">' + j.toString() + '</span>'
+						})
+					}).addTo(this.map)
 				}
 				L.polyline(latlngs, {color: Colors[i]}).addTo(this.map);	
 			}
@@ -197,8 +231,34 @@ class LiveRoute extends Component {
 	}
 
 	componentWillReceiveProps(nextProps){
-		console.log("np", nextProps)
 		this.updateMap()
+	}
+
+	allowChange = (position) => {
+		this.setState({changeTeam: position.teamId, changePosition: position.positionId})
+	}
+
+	changePosition = (lat, lng) => {
+		let {addPosition, changeTeam, changePosition} = this.state
+		let {teams, positions} = this.props
+		if(addPosition){
+			positions[changeTeam].push({lat: lat, lng: lng, name: 'dummy name'})
+			this.props.addPosition(positions)
+		}else if(changeTeam && changePosition){
+			// this.props.update
+			positions[changeTeam][changePosition].lat = lat
+			positions[changeTeam][changePosition].lng = lng
+			this.props.addPosition(positions)
+			console.log("chaning posington", changeTeam, changePosition, lat, lng)
+		}
+	}
+
+	addNewPosition = teamId => {
+		this.setState({changeTeam: teamId, addPosition: true})
+	}
+
+	done = () => {
+		this.setState({addPosition: false, changeTeam: '', addPosition: ''})
 	}
 
 	render() {
@@ -208,6 +268,13 @@ class LiveRoute extends Component {
 				changeScreen={this.props.changeScreen}
 				teams={this.props.teams}
 				updateShowRoute={this.props.updateShowRoute}
+				positions={this.props.positions}
+				allowChange={this.allowChange}
+				addNewPosition={this.addNewPosition}
+				updating={this.state.addPosition||this.state.changeTeam}
+				done={this.done}
+				addPosition={this.props.addPosition}
+				saveTeamUpdate={this.props.saveUpdate}
 			/>
 			<div id="map-id" style={{width: 'calc(100vw - 256px)', height: '100vh'}}></div>
 		</div>
